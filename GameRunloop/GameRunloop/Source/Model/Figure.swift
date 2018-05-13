@@ -8,14 +8,43 @@
 
 import Foundation
 
-struct Figure {
-    var hp: Int
-    var mp: Int
-    var attack: Int
-    var defense: Int
+public enum FigureType {
+    case red
+//    case neutral
+    case blue
+}
+
+public protocol FigureDelegate: class {
+    func figureDidDeath(figure: Figure)
+}
+
+public class Figure {
     
-    var speed: Int
-    private var process: Int
+    weak var delegate: FigureDelegate?
+    
+    var type: FigureType = .red
+    
+    var isDead: Bool {
+        return self.hp < 0
+    }
+    
+    var hp: Int = 0 {
+        didSet {
+            if hp < 0 {
+                delegate?.figureDidDeath(figure: self)
+            }
+        }
+    }
+    var mp: Int = 0
+    
+    var attack: Int = 0
+    var defense: Int = 0
+    
+    var speed: Int = 0
+    private var process: Int = 0
+    
+    weak var aimFigure: Figure?
+    var summonFigures: [Figure] = [Figure]()
     
     private struct StaticValue {
         static let processMax: Int = 9999
@@ -24,8 +53,14 @@ struct Figure {
 
 extension Figure {
     
-    @inline(__always)
-    private mutating func raiseProcess() -> Bool {
+    private func attack(figure: Figure) {
+        figure.hp = self.attack - figure.defense
+    }
+}
+
+extension Figure {
+    
+    func raiseProcess() -> Bool {
         
         process += speed
         if process > StaticValue.processMax {
@@ -36,16 +71,12 @@ extension Figure {
         
         return false
     }
-}
 
-extension Figure {
-    
-    mutating func action(friendlyForces: inout [Figure],
-                neutralForces: inout [Figure],
-                hostileForces: inout [Figure]) {
+    func action(friendlyFigures: inout [Figure],
+                amryFigures: inout [Figure]) {
         
-        if raiseProcess() {
-            
+        if amryFigures.count == 0 {
+            return
         }
     }
 }
